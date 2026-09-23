@@ -1,5 +1,6 @@
 const app = document.querySelector('#app');
 const toast = document.querySelector('#toast');
+let coverTimer = null;
 
 const nails = {
   N01: { name: '무색 유리방울', desc: '클리어 숏 · 작은 버블', icon: '🫧', m: 0, k: 1, intensity: 0, bg: 'linear-gradient(145deg,#e9fbff,#fff)', nail: 'linear-gradient(160deg,#fff,#c9f5ff)' },
@@ -17,22 +18,22 @@ const nails = {
 };
 
 const bases = [
-  { id: 'clear', name: '클리어', color: 'linear-gradient(160deg,#fff,#dff9ff)', m: 0, k: 1, intensity: 0 },
-  { id: 'pink', name: '핑크 시럽', color: 'linear-gradient(160deg,#fff0f7,#ff89bd)', m: 0, k: 4, intensity: 2 },
-  { id: 'ice', name: '아이스블루', color: 'linear-gradient(160deg,#effcff,#6dcfff)', m: 1, k: 1, intensity: 1 },
-  { id: 'cherry', name: '체리레드', color: 'linear-gradient(160deg,#ffafbf,#bd003f)', m: 4, k: 2, intensity: 4 },
-  { id: 'black', name: '블랙 크롬', color: 'linear-gradient(160deg,#9d9aa5,#171017)', m: 4, k: 0, intensity: 4 },
+  { id: 'clear', name: '클리어', color: 'linear-gradient(160deg,#fff,#dff9ff)', preview: './assets/builder-v2/bases/clear.webp', m: 0, k: 1, intensity: 0 },
+  { id: 'pink', name: '핑크 시럽', color: 'linear-gradient(160deg,#fff0f7,#ff89bd)', preview: './assets/builder-v2/bases/pink.webp', m: 0, k: 4, intensity: 2 },
+  { id: 'ice', name: '아이스블루', color: 'linear-gradient(160deg,#effcff,#6dcfff)', preview: './assets/builder-v2/bases/ice.webp', m: 1, k: 1, intensity: 1 },
+  { id: 'cherry', name: '체리레드', color: 'linear-gradient(160deg,#ffafbf,#bd003f)', preview: './assets/builder-v2/bases/cherry.webp', m: 4, k: 2, intensity: 4 },
+  { id: 'black', name: '블랙 크롬', color: 'linear-gradient(160deg,#9d9aa5,#171017)', preview: './assets/builder-v2/bases/black.webp', m: 4, k: 0, intensity: 4 },
 ];
 
 const parts = [
-  { id: 'bubble', name: '🫧 유리방울', icon: '🫧', m: 0, k: 1, intensity: 1 },
-  { id: 'ribbon', name: '🎀 리본', icon: '🎀', m: 0, k: 4, intensity: 2 },
-  { id: 'rabbit', name: '🐰 토끼', icon: '🐰', m: 1, k: 4, intensity: 3 },
-  { id: 'tear', name: '💧 눈물', icon: '💧', m: 3, k: 2, intensity: 2 },
-  { id: 'chain', name: '⛓ 체인', icon: '⛓', m: 4, k: 1, intensity: 4 },
-  { id: 'thorn', name: '† 가시', icon: '†', m: 4, k: 0, intensity: 4 },
-  { id: 'heart', name: '♥ 하트', icon: '♥', m: 1, k: 4, intensity: 2 },
-  { id: 'piercing', name: '◎ 피어싱', icon: '◎', m: 3, k: 2, intensity: 3 },
+  { id: 'bubble', name: '유리방울', image: './assets/builder-v1/parts/bubble.webp', m: 0, k: 1, intensity: 1 },
+  { id: 'ribbon', name: '리본', image: './assets/builder-v1/parts/ribbon.webp', m: 0, k: 4, intensity: 2 },
+  { id: 'rabbit', name: '토끼', image: './assets/builder-v1/parts/rabbit.webp', m: 1, k: 4, intensity: 3 },
+  { id: 'tear', name: '눈물', image: './assets/builder-v1/parts/tear.webp', m: 3, k: 2, intensity: 2 },
+  { id: 'chain', name: '체인', image: './assets/builder-v1/parts/chain.webp', m: 4, k: 1, intensity: 4 },
+  { id: 'thorn', name: '가시', image: './assets/builder-v1/parts/thorn.webp', m: 4, k: 0, intensity: 4 },
+  { id: 'heart', name: '하트', image: './assets/builder-v1/parts/heart.webp', m: 1, k: 4, intensity: 2 },
+  { id: 'piercing', name: '피어싱', image: './assets/builder-v1/parts/piercing.webp', m: 3, k: 2, intensity: 3 },
 ];
 
 const questions = [
@@ -47,15 +48,15 @@ const questions = [
 ];
 
 const results = {
-  ll: { name: '감정 OFF 탑젤 유령', emoji: '👻', quote: '아무 생각 없어 보이지만 기준 미달은 조용히 삭제해.', charge: '꾸민 티는 적어도 광택과 마감의 차이는 정확히 알아보는 타입.', tags: ['클리어','누드','숏네일','미니멀'], bg: 'linear-gradient(145deg,#e8fbff,#ffffff)' },
-  ml: { name: '얼어붙은 유리 고양이', emoji: '🐈', quote: '답장은 늦게 해도 읽씹당한 시간은 정확히 기억해.', charge: '차가운 컬러 속 작은 실버 디테일에 은근히 마음을 빼앗기는 타입.', tags: ['아이스블루','자석젤','실버','시크'], bg: 'linear-gradient(145deg,#d9f6ff,#b9a7ff)' },
-  hl: { name: '흑화 3초 전 크롬 천사', emoji: '🪽', quote: '천사 모드는 상대방의 태도에 따라 조기 종료됩니다.', charge: '애매한 장식보다 블랙 크롬처럼 선명하고 강한 디자인을 좋아해.', tags: ['블랙','크롬','스틸레토','메탈'], bg: 'linear-gradient(145deg,#a9a5b1,#342033)' },
-  lm: { name: '말랑 시럽 인간', emoji: '🫠', quote: '말랑해 보인다고 아무거나 섞으면 맛없어져.', charge: '부드러운 컬러를 좋아하지만 시럽의 농도만큼은 타협하지 않아.', tags: ['시럽네일','핑크','글로시','라운드'], bg: 'linear-gradient(145deg,#ffe8f3,#ffacd2)' },
-  mm: { name: '리본 뒤 야간모드', emoji: '🎭', quote: '내 손은 청순한데 저장 목록은 새벽 3시야.', charge: '실착은 밀크핑크, 저장함은 블랙 리본과 체인으로 채워지는 타입.', tags: ['핑크블랙','리본','다크큐트','포인트네일'], bg: 'linear-gradient(145deg,#ffb6d8,#6e496b)' },
-  hm: { name: '체리맛 가시 악마', emoji: '😈', quote: '다가오지 마. 그런데 왜 진짜 안 와?', charge: '달콤한 하트에도 체인이나 가시 한 조각은 꼭 필요한 타입.', tags: ['체리레드','체인','다크로맨틱','롱네일'], bg: 'linear-gradient(145deg,#ff8eaa,#52162f)' },
-  lh: { name: '순애보 토끼젤리', emoji: '🐰', quote: '좋아하는 사람과 네일에는 계산 같은 거 안 해.', charge: '하트와 토끼처럼 귀여운 디테일을 발견하면 바로 저장하는 타입.', tags: ['베이비핑크','토끼','하트','러블리'], bg: 'linear-gradient(145deg,#fff0f7,#ffb9db)' },
-  mh: { name: '질투 폭주 리본캣', emoji: '😾', quote: '신경 안 써. 그냥 다 보고 있었을 뿐이야.', charge: '사랑스러운 리본에 낯선 피어싱 하나를 섞을 때 가장 설레는 타입.', tags: ['리본네일','고양이','실버파츠','키치'], bg: 'linear-gradient(145deg,#ffacd4,#b9a7ff)' },
-  hh: { name: '고장 난 하트 인형', emoji: '💔', quote: '사랑받고 싶지만 평범해지고 싶지는 않아.', charge: '리본·체인·하트를 한 손에 전부 올려도 아직 부족한 맥시멀 타입.', tags: ['맥시멀','핑크블랙','3D파츠','다크모에'], bg: 'linear-gradient(145deg,#ff5aa7,#4d1839)' },
+  ll: { name: '무심한 클리어 네일', image: './assets/results-v2/ll.webp', quote: '깔끔해 보여도 마감과 광택은 꼼꼼하게 보는 편이야.', charge: '꾸민 티는 적어도 손끝이 단정하게 정리된 디자인을 좋아해.', tags: ['클리어','누드','숏네일','미니멀'], bg: 'linear-gradient(145deg,#e8fbff,#ffffff)' },
+  ml: { name: '차가운 유리 네일', image: './assets/results-v2/ml.webp', quote: '차가운 컬러에 작은 실버 포인트가 있으면 눈이 가.', charge: '아이스블루와 자석젤처럼 차분한 색에 반짝임이 있는 디자인을 좋아해.', tags: ['아이스블루','자석젤','실버','시크'], bg: 'linear-gradient(145deg,#d9f6ff,#b9a7ff)' },
+  hl: { name: '선명한 크롬 네일', image: './assets/results-v2/hl.webp', quote: '애매한 장식보다 선명한 크롬이 더 좋아.', charge: '블랙과 메탈처럼 색과 형태가 또렷한 디자인에 끌려.', tags: ['블랙','크롬','스틸레토','메탈'], bg: 'linear-gradient(145deg,#a9a5b1,#342033)' },
+  lm: { name: '말랑한 시럽 네일', image: './assets/results-v2/lm.webp', quote: '부드러운 컬러일수록 농도와 조합이 중요해.', charge: '핑크 시럽처럼 은은한 색과 반짝이는 마감의 조합을 좋아해.', tags: ['시럽네일','핑크','글로시','라운드'], bg: 'linear-gradient(145deg,#ffe8f3,#ffacd2)' },
+  mm: { name: '리본 포인트 네일', image: './assets/results-v2/mm.webp', quote: '실제로는 은은하게, 저장할 때는 리본과 체인까지.', charge: '밀크핑크도 좋아하지만 가끔은 핑크와 블랙을 함께 고르는 편이야.', tags: ['핑크블랙','리본','다크큐트','포인트네일'], bg: 'linear-gradient(145deg,#ffb6d8,#6e496b)' },
+  hm: { name: '체리 가시 네일', image: './assets/results-v2/hm.webp', quote: '달콤한 하트에도 체인이나 가시 하나는 필요해.', charge: '체리레드처럼 달콤한 색에 한 가지 강한 포인트를 더하는 걸 좋아해.', tags: ['체리레드','체인','다크로맨틱','롱네일'], bg: 'linear-gradient(145deg,#ff8eaa,#52162f)' },
+  lh: { name: '토끼 포인트 네일', image: './assets/results-v2/lh.webp', quote: '귀여운 포인트가 있으면 오래 눈길이 가.', charge: '하트와 토끼처럼 작지만 분명한 장식이 있는 디자인을 좋아해.', tags: ['베이비핑크','토끼','하트','러블리'], bg: 'linear-gradient(145deg,#fff0f7,#ffb9db)' },
+  mh: { name: '리본 체인 네일', image: './assets/results-v2/mh.webp', quote: '리본에 실버 포인트 하나가 섞이면 더 마음에 들어.', charge: '사랑스러운 리본에 체인이나 피어싱을 하나 더하는 조합을 좋아해.', tags: ['리본네일','고양이','실버파츠','키치'], bg: 'linear-gradient(145deg,#ffacd4,#b9a7ff)' },
+  hh: { name: '하트 믹스 네일', image: './assets/results-v2/hh.webp', quote: '하트, 리본, 체인을 함께 써도 아직 아쉬워.', charge: '여러 장식과 색을 한 번에 즐기는 화려한 디자인을 좋아해.', tags: ['맥시멀','핑크블랙','3D파츠','다크모에'], bg: 'linear-gradient(145deg,#ff5aa7,#4d1839)' },
 };
 
 const state = { screen: 'intro', name: '', index: 0, responses: {}, current: null };
@@ -68,6 +69,8 @@ function showToast(message) {
 }
 
 function setScreen(screen) {
+  clearInterval(coverTimer);
+  coverTimer = null;
   state.screen = screen;
   window.scrollTo({ top: 0, behavior: 'smooth' });
   render();
@@ -84,18 +87,56 @@ function render() {
 function renderIntro() {
   app.innerHTML = `
     <section class="screen intro-screen">
-      <span class="eyebrow">✦ PATZ NAIL TASTE TEST</span>
-      <h1 class="intro-title">내 네일 취향,<br><strong>몇 대 몇?</strong></h1>
-      <p class="lead">네일을 고르면 알아보는<br>나의 멘헤라력 vs 모에력</p>
-      <div class="evidence-board" aria-hidden="true">
-        <div class="phone"><div class="mini-grid"><span class="mini-nail" style="--bg:#ff99c9">🎀</span><span class="mini-nail" style="--bg:#272027">⛓</span><span class="mini-nail" style="--bg:#dff8ff">🫧</span><span class="mini-nail" style="--bg:#c8b3ff">💧</span></div></div>
-        <div class="tape">MENTAL × MOE · MENTAL × MOE</div>
-        <div class="stamp">TASTE CHECK</div>
+      <div class="cover-stage">
+        <button class="cover-art-button" id="coverHandBtn" type="button" aria-label="네일 디자인 바꿔보기">
+          <img class="cover-art-frame active" src="./assets/cover-v3/cover-clear.webp" alt="하트 거울 속 클리어 별 네일" data-cover-label="클리어 별 네일" />
+          <img class="cover-art-frame" src="./assets/cover-v3/cover-ribbon.webp" alt="하트 거울 속 핑크 리본 네일" data-cover-label="핑크 리본 네일" />
+          <img class="cover-art-frame" src="./assets/cover-v3/cover-cherry.webp" alt="하트 거울 속 체리 하트 네일" data-cover-label="체리 하트 네일" />
+          <img class="cover-art-frame" src="./assets/cover-v3/cover-chrome.webp" alt="하트 거울 속 실버 크롬 네일" data-cover-label="실버 크롬 네일" />
+        </button>
+        <div class="intro-brand" aria-label="Patz">PATZ <span>NAIL TASTE TEST</span></div>
+        <div class="cover-copy">
+          <p class="cover-kicker">멘헤라력 × 모에력</p>
+          <h1 class="cover-title">나는 멘헤라? 모에?<br><strong>네일로 알아보는 취향 테스트</strong></h1>
+        </div>
+        <div class="cover-interaction" aria-hidden="true">
+          <span class="cover-hint">거울을 눌러 네일 바꾸기</span>
+          <span class="cover-pagination"><i class="active"></i><i></i><i></i><i></i></span>
+        </div>
+        <div class="intro-actions">
+          <button class="primary-btn intro-primary-btn" id="startBtn">테스트 시작하기 <span>→</span></button>
+          <p class="microcopy">약 2분 · 심리 진단이 아닌 네일 미감 테스트</p>
+        </div>
       </div>
-      <button class="primary-btn" id="startBtn">테스트 시작하기</button>
-      <p class="microcopy">약 2분 · 심리 진단이 아닌 네일 미감 테스트</p>
     </section>`;
-  document.querySelector('#startBtn').addEventListener('click', () => setScreen('name'));
+  document.querySelector('#startBtn').addEventListener('click', event => {
+    event.currentTarget.disabled = true;
+    document.querySelector('.intro-screen').classList.add('is-leaving');
+    window.setTimeout(() => setScreen('name'), 280);
+  });
+  startCoverAnimation();
+}
+
+function startCoverAnimation() {
+  const button = document.querySelector('#coverHandBtn');
+  const frames = [...document.querySelectorAll('.cover-art-frame')];
+  const dots = [...document.querySelectorAll('.cover-pagination i')];
+  if (!button || frames.length < 2) return;
+  let activeIndex = 0;
+  const advance = () => {
+    frames[activeIndex].classList.remove('active');
+    activeIndex = (activeIndex + 1) % frames.length;
+    frames[activeIndex].classList.add('active');
+    dots.forEach((dot, index) => dot.classList.toggle('active', index === activeIndex));
+    button.setAttribute('aria-label', `${frames[activeIndex].dataset.coverLabel} 보기`);
+    button.classList.remove('burst');
+    void button.offsetWidth;
+    button.classList.add('burst');
+  };
+  button.addEventListener('click', advance);
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    coverTimer = window.setInterval(advance, 2000);
+  }
 }
 
 function renderName() {
@@ -125,7 +166,7 @@ function nailOption(id, selection = [], rank = false) {
   const selectedIndex = selection.indexOf(id);
   return `<button class="option ${selectedIndex >= 0 ? 'selected' : ''}" data-id="${id}" aria-pressed="${selectedIndex >= 0}">
     ${selectedIndex >= 0 && rank ? `<span class="option-rank">${selectedIndex + 1}</span>` : ''}
-    <span class="nail-art" data-icon="${item.icon}" style="--card-bg:${item.bg};--nail-bg:${item.nail};--tilt:${(Number(id.slice(1)) % 2 ? -5 : 6)}deg"></span>
+    <span class="nail-art" style="--card-bg:${item.bg};--photo:url('./assets/nails/${id}.webp');--tilt:${(Number(id.slice(1)) % 2 ? -5 : 6)}deg"><img src="./assets/nails/${id}.webp" alt="${item.name}" /></span>
     <span class="option-name">${item.name}</span>
     <span class="option-desc">${item.desc}</span>
   </button>`;
@@ -148,12 +189,29 @@ function renderQuiz() {
         <div class="quiz-meta"><span>테스트 진행 중</span><span>${state.index + 1} / ${questions.length}</span></div>
         <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
       </header>
-      <div class="question-copy"><p class="question-kicker">${q.kicker}</p><h2>${q.title}</h2><p class="question-guide">${q.guide}</p></div>
+      <div class="question-copy"><p class="question-kicker">${q.kicker}</p><h2 class="question-title">${q.title}</h2><p class="question-guide">${q.guide}</p></div>
       <div id="questionBody"></div>
       <footer class="quiz-footer"><button class="primary-btn" id="nextBtn" ${isValid(q) ? '' : 'disabled'}>${state.index === questions.length - 1 ? '내 취향 결과 보기' : '다음 질문'}</button></footer>
     </section>`;
   renderQuestionBody(q);
+  fitQuestionTitle();
   document.querySelector('#nextBtn').addEventListener('click', nextQuestion);
+}
+
+function fitQuestionTitle() {
+  const title = document.querySelector('.question-title');
+  if (!title) return;
+
+  const minimumSize = 22;
+  const maximumLines = 2;
+  const computed = getComputedStyle(title);
+  const lineHeight = parseFloat(computed.lineHeight);
+  let fontSize = parseFloat(computed.fontSize);
+
+  while (title.scrollHeight > lineHeight * maximumLines + 2 && fontSize > minimumSize) {
+    fontSize -= 1;
+    title.style.fontSize = `${fontSize}px`;
+  }
 }
 
 function renderQuestionBody(q) {
@@ -196,14 +254,25 @@ function selectNail(q, id) {
 
 function renderBuilder(body) {
   const current = state.current;
-  const base = bases.find(item => item.id === current.base);
-  const icons = current.parts.map(id => parts.find(item => item.id === id).icon);
+  const base = bases.find(item => item.id === current.base) || bases[0];
+  const selectedParts = current.parts.map(id => parts.find(item => item.id === id)).filter(Boolean);
+  const placements = [
+    { x: 38.3, y: 19.7, rotate: -4, label: '약지' },
+    { x: 62.5, y: 27.1, rotate: 5, label: '검지' },
+  ];
   body.innerHTML = `
-    <div class="builder-preview"><div class="finger-row">${[80,105,116,104,76].map((height, i) => `<span class="preview-nail" style="--height:${height}px;--base:${base?.color || '#f7eff4'}">${icons[i % Math.max(icons.length,1)] || ''}</span>`).join('')}</div></div>
+    <div class="builder-preview builder-preview-real" aria-live="polite">
+      <img class="builder-hand" src="${base.preview}" alt="${base.name} 베이스를 바른 손" />
+      ${selectedParts.map((part, index) => {
+        const point = placements[index];
+        return `<img class="builder-applied-part part-${part.id} part-slot-${index + 1}" src="${part.image}" alt="${point.label}에 적용된 ${part.name} 파츠" style="--part-x:${point.x}%;--part-y:${point.y}%;--part-r:${point.rotate}deg" />`;
+      }).join('')}
+      <div class="builder-preview-status"><span>${current.base ? base.name : '베이스를 골라줘'}</span><strong>${selectedParts.length ? selectedParts.map(item => item.name).join(' + ') : '파츠를 골라줘'}</strong></div>
+    </div>
     <p class="builder-title">1. 베이스 선택</p>
-    <div class="chip-row">${bases.map(item => `<button class="chip ${current.base === item.id ? 'selected' : ''}" data-base="${item.id}">${item.name}</button>`).join('')}</div>
+    <div class="base-choice-row">${bases.map(item => `<button class="base-chip ${current.base === item.id ? 'selected' : ''}" data-base="${item.id}" aria-pressed="${current.base === item.id}"><span class="base-swatch" style="--swatch:${item.color}"></span><span>${item.name}</span></button>`).join('')}</div>
     <p class="builder-title">2. 포인트 파츠 2개 선택</p>
-    <div class="chip-row">${parts.map(item => `<button class="chip ${current.parts.includes(item.id) ? 'selected' : ''}" data-part="${item.id}">${item.name}</button>`).join('')}</div>`;
+    <div class="part-choice-grid">${parts.map(item => `<button class="part-chip ${current.parts.includes(item.id) ? 'selected' : ''}" data-part="${item.id}" aria-pressed="${current.parts.includes(item.id)}"><span class="part-thumb"><img src="${item.image}" alt="" /></span><span>${item.name}</span></button>`).join('')}</div>`;
   body.querySelectorAll('[data-base]').forEach(btn => btn.addEventListener('click', () => { state.current.base = btn.dataset.base; renderQuiz(); }));
   body.querySelectorAll('[data-part]').forEach(btn => btn.addEventListener('click', () => {
     const list = [...state.current.parts];
@@ -252,9 +321,38 @@ function getFinalCandidates() {
 }
 
 function renderLoading() {
-  app.innerHTML = `<section class="screen loading-screen"><div><div class="scanner"><div class="scan-nail"></div><div class="scan-line"></div></div><span class="eyebrow">취향 분석 중</span><h2 id="loadingText">저장 취향 확인 중…</h2><div class="loading-bar"><span id="loadingFill" style="width:12%"></span></div><p class="microcopy">네가 고른 디자인의 공통점을 찾고 있어.</p></div></section>`;
+  const builder = state.responses.builder || {};
+  const chosenBase = bases.find(item => item.id === builder.base) || bases[0];
+  const chosenParts = (builder.parts || []).map(id => parts.find(item => item.id === id)).filter(Boolean);
+  const loadingParts = (chosenParts.length ? chosenParts : [parts[1], parts[6]]).slice(0, 2);
+  const partMarkup = loadingParts.map((part, index) => `
+    <img class="loading-selected-part loading-part-${index + 1}" src="${part.image}" alt="" />
+  `).join('');
+
+  app.innerHTML = `
+    <section class="screen loading-screen">
+      <div class="loading-bg-orb loading-bg-orb-a"></div>
+      <div class="loading-bg-orb loading-bg-orb-b"></div>
+      <div class="loading-content">
+        <span class="eyebrow">취향 분석 중</span>
+        <div class="loading-stage" aria-hidden="true">
+          <div class="loading-base-glow" style="background:${chosenBase.color}"></div>
+          <div class="loading-capsule-shell">
+            <img class="loading-capsule" src="./assets/loading-v1/taste-capsule.webp" alt="" />
+            <div class="loading-scan-beam"></div>
+          </div>
+          ${partMarkup}
+          <i class="loading-spark loading-spark-a">✦</i>
+          <i class="loading-spark loading-spark-b">✦</i>
+          <div class="loading-flash"></div>
+        </div>
+        <h2 id="loadingText">취향을 정리하는 중…</h2>
+        <div class="loading-bar"><span id="loadingFill" style="width:12%"></span></div>
+        <p class="microcopy">네가 고른 베이스와 파츠를 살펴보고 있어.</p>
+      </div>
+    </section>`;
   const messages = [
-    ['실착 취향 비교 중…', 38], ['컬러와 파츠 조합 중…', 64], ['멘헤라력과 모에력 계산 중…', 84], ['결과 완성!', 100]
+    ['실착 취향 확인 중…', 38], ['컬러와 파츠 조합을 보는 중…', 64], ['멘헤라력과 모에력 정리 중…', 84], ['결과가 나왔어!', 100]
   ];
   let i = 0;
   const timer = setInterval(() => {
@@ -341,7 +439,7 @@ function renderResult() {
         <p class="result-label">${name}의 네일 취향</p>
         <h2 class="result-name">${result.subtype}<br>${result.name}</h2>
         <p class="result-quote">“${result.quote}”</p>
-        <div class="character-card" style="--result-bg:${result.bg}"><span class="character-emoji">${result.emoji}</span><span class="subtype-stamp">${result.subtype}</span></div>
+        <div class="character-card" style="--result-bg:${result.bg}"><img class="result-visual" src="${result.image}" alt="${result.name} 타입 네일 이미지" /><span class="subtype-stamp">${result.subtype}</span></div>
         <div class="score-list">
           ${scoreBar('멘헤라력', result.m, '#ff4fa3')}
           ${scoreBar('모에력', result.k, '#b9a7ff')}
@@ -354,22 +452,47 @@ function renderResult() {
       <div class="result-actions">
         <button class="primary-btn" id="shareBtn">친구에게 공유하기</button>
         <button class="primary-btn patz-btn" id="patzBtn">파츠에서 일치 네일 36개 보기</button>
-        <button class="secondary-btn" id="copyBtn">결과 문구 복사</button>
+        <button class="secondary-btn" id="captureBtn">결과 이미지 저장</button>
       </div>
       <button class="restart-btn" id="restartBtn">다시 테스트하기</button>
       <p class="disclaimer">이 결과는 실제 심리·정신건강 진단이 아닌 재미를 위한 네일 미감 테스트입니다.</p>
     </section>`;
-  const shareText = `${state.name}의 네일 취향은 몇 대 몇?\n${result.subtype} ${result.name}\n멘헤라 ${result.m} · 모에 ${result.k}\n너의 네일 취향도 확인해봐!`;
+  const shareText = `${state.name}의 네일 취향 결과\n${result.subtype} ${result.name}\n멘헤라력 ${result.m} · 모에력 ${result.k}\n너의 네일 취향도 확인해봐!`;
   document.querySelector('#shareBtn').addEventListener('click', async () => {
     if (navigator.share) {
-      try { await navigator.share({ title: '내 네일 취향, 몇 대 몇?', text: shareText, url: location.href }); }
+      try { await navigator.share({ title: '나는 멘헤라? 모에? 네일 취향 테스트', text: shareText, url: location.href }); }
       catch (_) { /* user cancelled */ }
     } else {
       await copyText(`${shareText}\n${location.href}`);
       showToast('공유 문구를 복사했어!');
     }
   });
-  document.querySelector('#copyBtn').addEventListener('click', async () => { await copyText(shareText); showToast('결과를 복사했어!'); });
+  document.querySelector('#captureBtn').addEventListener('click', async () => {
+    if (typeof window.html2canvas !== 'function') {
+      showToast('캡처 기능을 불러오지 못했어.');
+      return;
+    }
+    const button = document.querySelector('#captureBtn');
+    button.disabled = true;
+    button.textContent = '이미지 만드는 중…';
+    try {
+      const canvas = await window.html2canvas(document.querySelector('.report'), {
+        backgroundColor: '#fff',
+        scale: Math.min(window.devicePixelRatio || 1, 2),
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = 'patz-nail-result.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('결과 이미지를 저장했어!');
+    } catch (_) {
+      showToast('캡처하는 중 문제가 생겼어.');
+    } finally {
+      button.disabled = false;
+      button.textContent = '결과 이미지 저장';
+    }
+  });
   document.querySelector('#patzBtn').addEventListener('click', () => showToast('파츠 딥링크가 들어갈 자리야 ✦'));
   document.querySelector('#restartBtn').addEventListener('click', () => { state.index = 0; state.responses = {}; state.current = null; setScreen('intro'); });
 }
