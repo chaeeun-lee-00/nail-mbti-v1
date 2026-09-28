@@ -451,7 +451,7 @@ function renderResult() {
       </div>
       <div class="result-actions">
         <button class="primary-btn" id="shareBtn">친구에게 공유하기</button>
-        <button class="primary-btn patz-btn" id="patzBtn">파츠에서 일치 네일 36개 보기</button>
+        <button class="primary-btn patz-btn" id="patzBtn">파츠 앱에서 일치하는 네일 75개 보기</button>
         <button class="secondary-btn" id="captureBtn">결과 이미지 저장</button>
       </div>
       <button class="restart-btn" id="restartBtn">다시 테스트하기</button>
@@ -493,7 +493,9 @@ function renderResult() {
       button.textContent = '결과 이미지 저장';
     }
   });
-  document.querySelector('#patzBtn').addEventListener('click', () => showToast('파츠 딥링크가 들어갈 자리야 ✦'));
+  document.querySelector('#patzBtn').addEventListener('click', () => {
+    window.location.assign('https://apps.apple.com/kr/app/%ED%8C%8C%EC%B8%A0-patz/id6771630858');
+  });
   document.querySelector('#restartBtn').addEventListener('click', () => { state.index = 0; state.responses = {}; state.current = null; setScreen('intro'); });
 }
 
