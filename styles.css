@@ -202,6 +202,7 @@ h2 {
 .question-copy { margin-bottom: 18px; }
 .question-kicker { margin-bottom: 8px; color: #e82078; font-size: 12px; font-weight: 950; }
 .question-title { text-wrap: balance; }
+.rank-question-title { word-break: keep-all; }
 .question-guide { margin-bottom: 0; color: #6f5b69; font-size: 13px; }
 
 .option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -225,12 +226,13 @@ h2 {
   z-index: 3;
   top: -8px;
   right: -7px;
-  width: 29px;
+  min-width: 49px;
   height: 29px;
+  padding: 0 8px;
   display: grid;
   place-items: center;
   border: 2px solid var(--ink);
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--pink);
   color: #fff;
   font-size: 13px;
@@ -470,18 +472,44 @@ h2 {
 .score-track { height: 13px; border: 2px solid var(--ink); border-radius: 999px; background: #eee; overflow: hidden; }
 .score-track span { display: block; height: 100%; background: var(--fill); }
 
-.charge {
-  margin-top: 20px;
-  padding: 15px;
-  border: 2px dashed var(--ink);
-  border-radius: 14px;
-  background: #fff8cc;
+.personality-card {
+  margin-top: 26px;
+  padding: 18px 16px;
+  border: 1.5px solid #cfc0ee;
+  border-radius: 18px;
+  background: #f6f1ff;
+  box-shadow: 0 4px 0 #e9dff7;
 }
-.charge strong { display: block; margin-bottom: 5px; font-size: 11px; color: #e82078; }
-.charge p { margin: 0; font-size: 14px; font-weight: 800; line-height: 1.5; }
+.personality-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.personality-icon { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; background: #e7dbff; color: #70459b; font-size: 19px; }
+.personality-heading h3 { margin: 0; color: #573678; font-size: 14px; font-weight: 850; line-height: 1.45; letter-spacing: -.035em; }
+.personality-copy p { margin: 0; color: #51445d; font-size: 14px; font-weight: 500; line-height: 1.85; word-break: keep-all; overflow-wrap: anywhere; }
+.personality-copy p + p { margin-top: 13px; }
+
+.taste-summary {
+  margin-top: 22px;
+  padding: 19px 16px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: #fff7fb;
+}
+.taste-summary h3 { margin: 0 0 9px; color: var(--pink-soft); font-size: 11px; font-weight: 800; letter-spacing: .025em; }
+.taste-summary p { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.65; letter-spacing: -.025em; word-break: keep-all; overflow-wrap: anywhere; }
 
 .tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
 .tag { padding: 7px 9px; border: 1.5px solid var(--ink); border-radius: 999px; background: #f6e8f1; font-size: 10px; font-weight: 850; }
+.taste-summary .tags { gap: 6px; margin-top: 14px; }
+.taste-summary .tag { padding: 5px 8px; border: 1px solid #685165; background: #382433; color: #f6d5e8; font-weight: 650; }
+
+.favorite-designs { margin-top: 26px; padding-top: 20px; border-top: 2px dashed #e4d8e1; }
+.favorite-designs-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.favorite-designs-heading h3 { margin: 0; font-size: 14px; font-weight: 850; letter-spacing: -.035em; }
+.favorite-designs-heading > span { flex-shrink: 0; color: #90768a; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.favorite-design-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.favorite-design-list li { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 9px 10px; border: 1px solid #eee3eb; border-radius: 12px; background: #fffafb; }
+.favorite-design-rank { flex-shrink: 0; color: #b48aab; font-size: 11px; font-weight: 850; font-variant-numeric: tabular-nums; }
+.favorite-design-list img { flex-shrink: 0; display: block; width: 48px; height: 48px; border: 1px solid #ecdee8; border-radius: 9px; object-fit: cover; background: #f6e8f1; }
+.favorite-design-name { min-width: 0; font-size: 13px; font-weight: 750; line-height: 1.5; word-break: keep-all; overflow-wrap: anywhere; }
 
 .result-actions { display: grid; gap: 11px; margin-top: 24px; }
 .patz-btn { background: var(--ink); color: #fff; box-shadow: 5px 5px 0 var(--pink); }
