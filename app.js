@@ -181,6 +181,7 @@ function renderIntro() {
       </div>
     </section>`;
   document.querySelector('#startBtn').addEventListener('click', event => {
+    window.trackEvent('test_start');
     event.currentTarget.disabled = true;
     document.querySelector('.intro-screen').classList.add('is-leaving');
     window.setTimeout(() => setScreen('name'), 280);
@@ -225,7 +226,14 @@ function renderName() {
       </div>
     </section>`;
   const input = document.querySelector('#nameInput');
-  const go = () => { state.name = input.value.trim() || suggestedName; state.index = 0; state.current = null; setScreen('quiz'); };
+  const go = () => {
+    state.name = input.value.trim() || suggestedName;
+    // Boolean only: the nickname itself is never sent.
+    window.trackEvent('nickname_submit', { used_default: state.name === suggestedName });
+    state.index = 0;
+    state.current = null;
+    setScreen('quiz');
+  };
   document.querySelector('#nameBtn').addEventListener('click', go);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
 }
@@ -380,12 +388,18 @@ function nextQuestion() {
   if (!isValid(q)) return;
   state.responses[q.id] = structuredClone(state.current);
   showToast(state.index === questions.length - 1 ? '선택 완료!' : '선택을 저장했어');
+  // Which question was cleared, not which nails were picked.
+  window.trackEvent('question_answer', { question_id: q.id, step: state.index + 1, total: questions.length });
   if (state.index < questions.length - 1) {
     state.index += 1;
     state.current = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     renderQuiz();
-  } else setScreen('loading');
+  } else {
+    // The conversion event: every question answered.
+    window.trackEvent('quiz_complete', { questions: questions.length });
+    setScreen('loading');
+  }
 }
 
 function getFinalCandidates() {
@@ -558,6 +572,7 @@ function renderResult() {
     </section>`;
   const shareText = `${state.name}의 네일 취향 결과\n${result.subtype} ${result.name}\n멘헤라력 ${result.m} · 모에력 ${result.k}\n너의 네일 취향도 확인해봐!`;
   document.querySelector('#shareBtn').addEventListener('click', async () => {
+    window.trackEvent('result_share', { method: navigator.share ? 'web_share' : 'clipboard' });
     if (navigator.share) {
       try { await navigator.share({ title: '나는 멘헤라? 모에? 네일 취향 테스트', text: shareText, url: location.href }); }
       catch (_) { /* user cancelled */ }
@@ -584,8 +599,11 @@ function renderResult() {
       link.download = 'patz-nail-result.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
+      window.trackEvent('result_capture', { status: 'success' });
       showToast('결과 이미지를 저장했어!');
     } catch (_) {
+      // Mutually exclusive with the success call, so this never double counts.
+      window.trackEvent('result_capture', { status: 'error' });
       showToast('캡처하는 중 문제가 생겼어.');
     } finally {
       button.disabled = false;
@@ -593,6 +611,7 @@ function renderResult() {
     }
   });
   document.querySelector('#patzBtn').addEventListener('click', () => {
+    window.trackEvent('patz_app_click');
     window.location.assign('https://apps.apple.com/kr/app/%ED%8C%8C%EC%B8%A0-patz/id6771630858');
   });
   document.querySelector('#restartBtn').addEventListener('click', () => { state.index = 0; state.responses = {}; state.current = null; setScreen('intro'); });

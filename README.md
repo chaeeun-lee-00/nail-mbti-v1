@@ -55,8 +55,42 @@ an ending slash, while preserving root-domain and local-file use.
 `analytics.js` uses Vercel's supported `/_vercel/insights` endpoint, with the
 mounted prefix for both the script and collection. Tracking only runs on HTTPS.
 URL query strings and hashes are removed before sending; nicknames and quiz
-answers are not sent. Custom events are not configured.
+answers are not sent.
 Analytics blockers can prevent collection without affecting the quiz.
+
+### Funnel events (PostHog)
+
+Vercel gates custom events behind Pro, and this account is on Hobby, so funnel
+events go to PostHog instead. Page views still come from Vercel.
+
+| Event | Fires when |
+| --- | --- |
+| `test_start` | 테스트 시작하기 |
+| `nickname_submit` | nickname screen advances (`used_default` boolean only) |
+| `question_answer` | each question clears (`question_id`, `step`, `total`) |
+| `quiz_complete` | all questions answered - the conversion event |
+| `result_share` | share button (`method`) |
+| `result_capture` | image save (`status`) |
+| `patz_app_click` | App Store CTA |
+
+The app and this site share one PostHog project, because additional projects are
+a paid option. Every event from here carries `app: 'nail-mbti'` and
+`platform: 'web'` as super properties, so the two surfaces separate cleanly.
+Note that project-wide insights which count all events without a platform filter
+will now include web traffic.
+
+The same privacy stance as above is kept: `autocapture` and session recording are
+off so no DOM text or input value can carry a nickname, `person_profiles` stays
+`identified_only` with no `identify()` call so quiz takers remain anonymous and
+never merge into app person profiles, and `before_send` strips query strings and
+hashes from URL properties.
+
+Because the official site serves `script-src 'self'` and `connect-src 'self'`,
+posthog.com is unreachable from the page. `vercel.json` therefore rewrites `/ph/*`
+to PostHog (assets and API are separate hosts), and `api_host` is the mounted
+`/ph` path, keeping every request same-origin rather than loosening the CSP.
+PostHog normalizes `/i/v0/e/` to `/i/v0/e` with a relative 308, which the browser
+follows within the same origin.
 
 The existing html2canvas 1.4.1 library is vendored in `assets/vendor` (MIT license
 notice retained) so image saving complies with the official site's script policy.
